@@ -44,6 +44,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Authentication state
   let currentUser = null;
 
+  // Constants
+  const SCHOOL_NAME = "Mergington High School";
+
   // Time range mappings for the dropdown
   const timeRanges = {
     morning: { start: "06:00", end: "08:00" }, // Before school hours
@@ -877,7 +880,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Social sharing functions
   function shareOnTwitter(activityName, activityDescription) {
-    const text = `Check out ${activityName} at Mergington High School! ${activityDescription}`;
+    // encodeURIComponent handles sanitization of special characters
+    const text = `Check out ${activityName} at ${SCHOOL_NAME}! ${activityDescription}`;
     const url = `${window.location.origin}${window.location.pathname}`;
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
     window.open(twitterUrl, '_blank', 'width=550,height=420');
@@ -885,14 +889,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function shareOnFacebook(activityName) {
     const url = `${window.location.origin}${window.location.pathname}`;
-    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent('Check out ' + activityName + ' at Mergington High School!')}`;
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent('Check out ' + activityName + ' at ' + SCHOOL_NAME + '!')}`;
     window.open(facebookUrl, '_blank', 'width=550,height=420');
   }
 
   function copyActivityLink(activityName) {
     const url = `${window.location.origin}${window.location.pathname}`;
     
-    // Try using the Clipboard API
+    // Try using the Clipboard API (modern browsers)
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(url).then(() => {
         showMessage(`Link copied! Share ${activityName} with your friends.`, 'success');
@@ -906,6 +910,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Fallback copy function for older browsers
+  // Uses deprecated document.execCommand('copy') for legacy browser support
   function fallbackCopyTextToClipboard(text, activityName) {
     const textArea = document.createElement("textarea");
     textArea.value = text;
@@ -916,6 +922,7 @@ document.addEventListener("DOMContentLoaded", () => {
     textArea.select();
 
     try {
+      // Note: execCommand is deprecated but needed for older browser support
       const successful = document.execCommand('copy');
       if (successful) {
         showMessage(`Link copied! Share ${activityName} with your friends.`, 'success');
