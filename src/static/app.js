@@ -552,6 +552,17 @@ document.addEventListener("DOMContentLoaded", () => {
             .join("")}
         </ul>
       </div>
+      <div class="share-buttons">
+        <button class="share-btn share-twitter" data-activity="${name}" title="Share on Twitter">
+          <span class="share-icon">🐦</span>
+        </button>
+        <button class="share-btn share-facebook" data-activity="${name}" title="Share on Facebook">
+          <span class="share-icon">📘</span>
+        </button>
+        <button class="share-btn share-copy" data-activity="${name}" title="Copy link">
+          <span class="share-icon">🔗</span>
+        </button>
+      </div>
       <div class="activity-card-actions">
         ${
           currentUser
@@ -576,6 +587,15 @@ document.addEventListener("DOMContentLoaded", () => {
     deleteButtons.forEach((button) => {
       button.addEventListener("click", handleUnregister);
     });
+
+    // Add click handlers for share buttons
+    const shareTwitterBtn = activityCard.querySelector(".share-twitter");
+    const shareFacebookBtn = activityCard.querySelector(".share-facebook");
+    const shareCopyBtn = activityCard.querySelector(".share-copy");
+
+    shareTwitterBtn.addEventListener("click", () => shareOnTwitter(name, details.description));
+    shareFacebookBtn.addEventListener("click", () => shareOnFacebook(name));
+    shareCopyBtn.addEventListener("click", () => copyActivityLink(name));
 
     // Add click handler for register button (only when authenticated)
     if (currentUser) {
@@ -854,6 +874,60 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Error signing up:", error);
     }
   });
+
+  // Social sharing functions
+  function shareOnTwitter(activityName, activityDescription) {
+    const text = `Check out ${activityName} at Mergington High School! ${activityDescription}`;
+    const url = `${window.location.origin}${window.location.pathname}`;
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+    window.open(twitterUrl, '_blank', 'width=550,height=420');
+  }
+
+  function shareOnFacebook(activityName) {
+    const url = `${window.location.origin}${window.location.pathname}`;
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent('Check out ' + activityName + ' at Mergington High School!')}`;
+    window.open(facebookUrl, '_blank', 'width=550,height=420');
+  }
+
+  function copyActivityLink(activityName) {
+    const url = `${window.location.origin}${window.location.pathname}`;
+    
+    // Try using the Clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        showMessage(`Link copied! Share ${activityName} with your friends.`, 'success');
+      }).catch(err => {
+        // Fallback to older method
+        fallbackCopyTextToClipboard(url, activityName);
+      });
+    } else {
+      // Use fallback for older browsers
+      fallbackCopyTextToClipboard(url, activityName);
+    }
+  }
+
+  function fallbackCopyTextToClipboard(text, activityName) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
+        showMessage(`Link copied! Share ${activityName} with your friends.`, 'success');
+      } else {
+        showMessage('Failed to copy link. Please copy manually.', 'error');
+      }
+    } catch (err) {
+      showMessage('Failed to copy link. Please copy manually.', 'error');
+    }
+
+    document.body.removeChild(textArea);
+  }
 
   // Expose filter functions to window for future UI control
   window.activityFilters = {
